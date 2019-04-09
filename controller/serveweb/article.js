@@ -21,7 +21,7 @@ const test = (req,res,next) => {
  * 
  * @returns Array [{}]
  */
-const getTables = (req,res,next) => {
+const getArticles = (req,res,next) => {
   const sql = `select * from blog_article where dr = 1 order by changetime DESC`
   exec(sql).then( data => {
     res.json(new SuccessModel(data))
@@ -34,7 +34,7 @@ const getTables = (req,res,next) => {
  * @param {} 新建内容的 标题 和 内容
  * @returns Object {}
  */
-const newtianJia = (req,res,next) => {
+const insertArticle = (req,res,next) => {
   let body = req.body // POST 中的内容 是放到了 body 中了，常见的就是 form 表格提交中的数据了
   let uuid = uuidv4()
   let sql = `INSERT INTO blog_article (pk, title, introduce, articletext, lasttime, changetime) VALUES ('${uuid}', '${body.title}', '${body.introduce}', '${body.articletext}', '${moment().format('YYYY-MM-DD HH:mm')}', '${moment().format('YYYY-MM-DD HH:mm')}')`
@@ -51,7 +51,7 @@ const newtianJia = (req,res,next) => {
  * @param {} 修改之后的内容
  * @returns Object {} 里面有个参数表示影响了几行，如果 >1 表示成功了
  */
-const tianJia = (req,res,next) => {
+const updateArticle = (req,res,next) => {
   let body = req.body // POST 中的内容 是放到了 body 中了，常见的就是 form 表格提交中的数据了
   let sql = `UPDATE blog_article SET articletext = '${body.articletext}', title = '${body.title}', introduce = '${body.introduce}', changetime = '${moment().format('YYYY-MM-DD HH:mm')}' WHERE pk = '${body.pk}'`
   // console.log('sql', sql)
@@ -77,8 +77,8 @@ const delectA = (req,res,next) => {
 
 module.exports = {
   test, // GET
-  getTables, // GET
-  newtianJia, // POST
-  tianJia, // POST
+  getArticles, // GET
+  insertArticle, // POST
+  updateArticle, // POST
   delectA
 }

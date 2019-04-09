@@ -4,7 +4,6 @@ const app = express()
 const path = require('path')
 const fs = require('fs')
 const bodyParser = require('body-parser') // 解析后端返回的数据
-const router = require('./router/index') // 路由文件
 const cors = require('cors') // 解决跨域
 const logger= require('morgan') // 日志记录 
 
@@ -21,6 +20,11 @@ if (ENV ==='dev') {
 app.use(bodyParser.json()); // 解析 application/json 类型数据
 app.use(bodyParser.urlencoded({ extended: true })); // 解析 application/x-www-form-urlencoded 类型数据
 app.use(cors()) // 解决跨域
-app.use('/', router) // 渲染路由模块
+
+// === 路由部分 ===
+const webRouter = require('./router/web') // web端 路由文件
+const webServeRouter = require('./router/serveweb') // web端 路由文件
+app.use('/api', webRouter) // 渲染 web端 路由模块
+app.use('/api', webServeRouter) // 渲染 serveweb端 路由模块
 
 module.exports = app
