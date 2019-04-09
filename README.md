@@ -19,4 +19,4 @@
 
 > 梳理了接口的结构，和 函数命名，使其更加规范化，详细见下面
 
-![image](https://github.com/zhukunpenglinyutong/My-blog-server/blob/master/imgs/2-1.png)
+![image](https://github.com/zhukunpenglinyutong/My-blog-server/blob/master/imgs/3-1.jpg)
