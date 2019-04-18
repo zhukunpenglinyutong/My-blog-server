@@ -1,4 +1,5 @@
 const { exec, escape } = require('../../db/mysql.js')
+const mysql = require('mysql')
 const { SuccessModel, ErrorModel } = require('../../model/resModel.js')
 const uuidv4 = require('uuid/v4')
 const moment = require('moment')
@@ -22,7 +23,8 @@ const test = (req,res,next) => {
  * @returns Array [{}]
  */
 const getArticles = (req,res,next) => {
-  const sql = `select * from blog_article where dr = 1 order by changetime DESC`
+  // DATE_FORMAT(changetime, '%Y-%m-%d %H:%m:%S') 这种写法可以转换前台展示的 2014-11-11T00:00:00.000Z 形式为正常理解格式
+  const sql = `select *, DATE_FORMAT(changetime, '%Y-%m-%d %H:%m:%S') as changetime, DATE_FORMAT(lasttime, '%Y-%m-%d %H:%m:%S') as lasttime from blog_article where dr = 1 order by changetime DESC`
   exec(sql).then( data => {
     res.json(new SuccessModel(data))
   })
@@ -36,8 +38,15 @@ const getArticles = (req,res,next) => {
  */
 const insertArticle = (req,res,next) => {
   let body = req.body // POST 中的内容 是放到了 body 中了，常见的就是 form 表格提交中的数据了
+
+  // 进行转义，防止SQL注入（后期考虑是否抽象成单独的安全层）
+  let articletext = mysql.escape(body.articletext)
+  let title = mysql.escape(body.title)
+  let introduce = mysql.escape(body.introduce)
+
   let uuid = uuidv4()
-  let sql = `INSERT INTO blog_article (pk, title, introduce, articletext, lasttime, changetime) VALUES ('${uuid}', '${body.title}', '${body.introduce}', '${body.articletext}', '${moment().format('YYYY-MM-DD HH:mm')}', '${moment().format('YYYY-MM-DD HH:mm')}')`
+  // let sql = `INSERT INTO blog_article (pk, title, introduce, articletext, lasttime, changetime) VALUES ('${uuid}', ${title}, ${introduce}, ${articletext}, '${moment().format('YYYY-MM-DD HH:mm')}', '${moment().format('YYYY-MM-DD HH:mm')}')`
+  let sql = `INSERT INTO blog_article (pk, title, introduce, articletext, lasttime, changetime) VALUES ('${uuid}', ${title}, ${introduce}, ${articletext}, now(), now())`  
   exec(sql).then( data => {
     res.json(new SuccessModel(data))
   })
@@ -53,8 +62,15 @@ const insertArticle = (req,res,next) => {
  */
 const updateArticle = (req,res,next) => {
   let body = req.body // POST 中的内容 是放到了 body 中了，常见的就是 form 表格提交中的数据了
-  let sql = `UPDATE blog_article SET articletext = '${body.articletext}', title = '${body.title}', introduce = '${body.introduce}', changetime = '${moment().format('YYYY-MM-DD HH:mm')}' WHERE pk = '${body.pk}'`
-  // console.log('sql', sql)
+
+  // 进行转义，防止SQL注入（后期考虑是否抽象成单独的安全层）
+  let articletext = mysql.escape(body.articletext)
+  let title = mysql.escape(body.title)
+  let introduce = mysql.escape(body.introduce)
+  let pk = mysql.escape(body.pk)
+
+  let sql = `UPDATE blog_article SET articletext = ${articletext}, title = ${title}, introduce = ${introduce}, changetime = '${moment().format('YYYY-MM-DD HH:mm')}' WHERE pk = ${pk}`
+  
   exec(sql).then( data => {
     res.json(new SuccessModel(data))
   })
@@ -67,9 +83,13 @@ const updateArticle = (req,res,next) => {
  * @returns Object
  */
 const delectA = (req,res,next) => {
-  let pk = req.body.pk // POST 中的内容 是放到了 body 中了，常见的就是 form 表格提交中的数据了
+  // let pk = req.body.pk // POST 中的内容 是放到了 body 中了，常见的就是 form 表格提交中的数据了
+
+  // 进行转义，防止SQL注入（后期考虑是否抽象成单独的安全层）
+  let pk = mysql.escape(req.body.pk)
+
   // let sql = `DELETE FROM blog_article WHERE pk = '${pk}'`
-  let sql = `UPDATE blog_article SET dr = 0 WHERE pk = '${pk}'`
+  let sql = `UPDATE blog_article SET dr = 0 WHERE pk = ${pk}`
   exec(sql).then( data => {
     res.json(new SuccessModel(data))
   })
