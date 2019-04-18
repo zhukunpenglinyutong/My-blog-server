@@ -2,7 +2,6 @@ const { exec, escape } = require('../../db/mysql.js')
 const mysql = require('mysql')
 const { SuccessModel, ErrorModel } = require('../../model/resModel.js')
 const uuidv4 = require('uuid/v4')
-const moment = require('moment')
 
 /**
  * @overview（GET）测试 Express 服务是否可以正常启动
@@ -24,7 +23,8 @@ const test = (req,res,next) => {
  */
 const getArticles = (req,res,next) => {
   // DATE_FORMAT(changetime, '%Y-%m-%d %H:%m:%S') 这种写法可以转换前台展示的 2014-11-11T00:00:00.000Z 形式为正常理解格式
-  const sql = `select *, DATE_FORMAT(changetime, '%Y-%m-%d %H:%m:%S') as changetime, DATE_FORMAT(lasttime, '%Y-%m-%d %H:%m:%S') as lasttime from blog_article where dr = 1 order by changetime DESC`
+  // 有问题，所以又改为了 格林尼治时间
+  const sql = `select * from blog_article where dr = 1 order by changetime DESC`
   exec(sql).then( data => {
     res.json(new SuccessModel(data))
   })
@@ -46,7 +46,7 @@ const insertArticle = (req,res,next) => {
 
   let uuid = uuidv4()
   // let sql = `INSERT INTO blog_article (pk, title, introduce, articletext, lasttime, changetime) VALUES ('${uuid}', ${title}, ${introduce}, ${articletext}, '${moment().format('YYYY-MM-DD HH:mm')}', '${moment().format('YYYY-MM-DD HH:mm')}')`
-  let sql = `INSERT INTO blog_article (pk, title, introduce, articletext, lasttime, changetime) VALUES ('${uuid}', ${title}, ${introduce}, ${articletext}, now(), now())`  
+  let sql = `INSERT INTO blog_article (pk, title, introduce, articletext, lasttime, changetime) VALUES ('${uuid}', ${title}, ${introduce}, ${articletext}, now(), now())`
   exec(sql).then( data => {
     res.json(new SuccessModel(data))
   })
@@ -69,8 +69,8 @@ const updateArticle = (req,res,next) => {
   let introduce = mysql.escape(body.introduce)
   let pk = mysql.escape(body.pk)
 
-  let sql = `UPDATE blog_article SET articletext = ${articletext}, title = ${title}, introduce = ${introduce}, changetime = '${moment().format('YYYY-MM-DD HH:mm')}' WHERE pk = ${pk}`
-  
+  let sql = `UPDATE blog_article SET articletext = ${articletext}, title = ${title}, introduce = ${introduce}, changetime = now() WHERE pk = ${pk}`
+
   exec(sql).then( data => {
     res.json(new SuccessModel(data))
   })
