@@ -24,8 +24,8 @@ const test = (req,res,next) => {
 const getArticles = (req,res,next) => {
   // DATE_FORMAT(changetime, '%Y-%m-%d %H:%m:%S') 这种写法可以转换前台展示的 2014-11-11T00:00:00.000Z 形式为正常理解格式
   // 有问题，所以又改为了 格林尼治时间
-  const sql = `select * from blog_article where dr = 1 order by changetime DESC`
-  exec(sql).then( data => {
+  const SQL = `select * from blog_article where dr = 1 order by changetime DESC`
+  exec(SQL).then( data => {
     res.json(new SuccessModel(data))
   })
 }
@@ -46,8 +46,8 @@ const insertArticle = (req,res,next) => {
 
   let uuid = uuidv4()
   // let sql = `INSERT INTO blog_article (pk, title, introduce, articletext, lasttime, changetime) VALUES ('${uuid}', ${title}, ${introduce}, ${articletext}, '${moment().format('YYYY-MM-DD HH:mm')}', '${moment().format('YYYY-MM-DD HH:mm')}')`
-  let sql = `INSERT INTO blog_article (pk, title, introduce, articletext, lasttime, changetime) VALUES ('${uuid}', ${title}, ${introduce}, ${articletext}, now(), now())`
-  exec(sql).then( data => {
+  const SQL = `INSERT INTO blog_article (pk, title, pk_article_type, introduce, articletext, lasttime, changetime) VALUES ('${uuid}', ${title}, '${body.value}', ${introduce}, ${articletext}, now(), now())`
+  exec(SQL).then( data => {
     res.json(new SuccessModel(data))
   })
 }
@@ -69,9 +69,8 @@ const updateArticle = (req,res,next) => {
   let introduce = mysql.escape(body.introduce)
   let pk = mysql.escape(body.pk)
 
-  let sql = `UPDATE blog_article SET articletext = ${articletext}, title = ${title}, introduce = ${introduce}, changetime = now() WHERE pk = ${pk}`
-
-  exec(sql).then( data => {
+  const SQL = `UPDATE blog_article SET articletext = ${articletext}, title = ${title}, introduce = ${introduce}, changetime = now() WHERE pk = ${pk}`
+  exec(SQL).then( data => {
     res.json(new SuccessModel(data))
   })
 }
@@ -82,15 +81,15 @@ const updateArticle = (req,res,next) => {
  * @param {} | 软删除 dr = 0
  * @returns Object
  */
-const delectA = (req,res,next) => {
+const delectArticle = (req,res,next) => {
   // let pk = req.body.pk // POST 中的内容 是放到了 body 中了，常见的就是 form 表格提交中的数据了
 
   // 进行转义，防止SQL注入（后期考虑是否抽象成单独的安全层）
   let pk = mysql.escape(req.body.pk)
 
   // let sql = `DELETE FROM blog_article WHERE pk = '${pk}'`
-  let sql = `UPDATE blog_article SET dr = 0 WHERE pk = ${pk}`
-  exec(sql).then( data => {
+  const SQL = `UPDATE blog_article SET dr = 0 WHERE pk = ${pk}`
+  exec(SQL).then( data => {
     res.json(new SuccessModel(data))
   })
 }
@@ -100,5 +99,5 @@ module.exports = {
   getArticles, // GET
   insertArticle, // POST
   updateArticle, // POST
-  delectA
+  delectArticle
 }
